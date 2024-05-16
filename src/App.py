@@ -85,10 +85,12 @@ class MainWindow(QMainWindow):
         self.setStyleSheet("background-color: white;") 
 
         self.arbre = Root()
+        self.arbre.update_NC_records()
         self.fouille = Fouille([])
         self.percentage = 0
         self.processRecordsThread = None
         self.organismPercentage = 0
+        self.total_ncs = 0 # for current subtree
 
         self.setupUi()
 
@@ -211,10 +213,21 @@ class MainWindow(QMainWindow):
     def displayFileContent(self, index):
         model = self.treeView.model()
         filePath = model.filePath(index)
-        if not model.isDir(index):
+        if model.isDir(index):
+            self.textEdit.clear()
+            relative_path = os.path.relpath(filePath, os.path.join(QDir.currentPath(), "Results"))
+            relative_path = "Results/"+relative_path
+            print("Relative path:", relative_path)
+            subtree = self.arbre.getSubtreeFromPath(relative_path) # Retrieve the subtree corresponding to the clicked item
+            self.arbre.print_tree(subtree)
+            self.total_ncs = subtree.nc_records_count
+            print("Total NCs:", self.total_ncs)
+            return subtree
+        else:
             with open(filePath, 'r') as file:
                 content = file.read()
                 self.textEdit.setPlainText(content)
+            return None
 
     def processRecords(self):
         try:
@@ -244,8 +257,8 @@ class MainWindow(QMainWindow):
         self.percentage = processed_ncs/nc_total*100
         self.progressLabel.setText(f"NCs processed: {processed_ncs}/{nc_total} {self.percentage:.3f}%")
         self.organismProgressLabel.setText(f"Organisms processed: {processed_organism}/{total_organism} {self.organismPercentage:.3f}%")
-        self.progressBar.setValue(int(self.percentage))  # Scale the percentage to the range of QProgressBar
-        self.progressBar.setFormat(f"{self.percentage:.3f}%")  # Display the percentage with decimal places
+        self.progressBar.setValue(int(self.percentage))
+        self.progressBar.setFormat(f"{self.percentage:.3f}%")
 
 
 if __name__ == "__main__":
