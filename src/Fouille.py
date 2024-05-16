@@ -93,7 +93,6 @@ class Fouille:
             self.processed_ncs += 1
         
         print(f"Processed {self.processed_ncs} records.")
-        # print(f"Percentage: {self.processed_ncs / self.total_ncs * 100:.2f}%")
     
     def fetch_and_process(self, organisme, path, abort_log):
         try:

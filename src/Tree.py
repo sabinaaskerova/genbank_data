@@ -17,21 +17,18 @@ class Node():
     def addChild(self, obj):
         obj.parent = self 
         self.children.append(obj)
+        self.update_nc_records_count()
         return obj
     
+    def update_parents_nc_records_count(self):
+        if self.parent is not None:
+            self.parent.update_nc_records_count()
+            self.parent.update_parents_nc_records_count()
+
+    def update_nc_records_count(self):
+        self.nc_records_count = sum(child.nc_records_count for child in self.children)
+    
 class Root(Node):# Contient les méthodes de construction de l'arbre des organismes et des répertoire.
-    def count_NC_records(self, filename):
-        nc_records_count = {} # Dictionary to store the number of NC records for each organism
-        with open(filename, 'r') as file:
-            for line in file:
-                parts = line.strip().split('\t')
-                organism = parts[5]
-                if organism not in nc_records_count:
-                    nc_records_count[organism] = 0
-                nc_records_count[organism] += 1
-
-        return nc_records_count
-
     # filename: le chemin relatif du fichier overview.txt  
     def download_file(self, url, filename): # for downloadig NC ids files
         response = requests.get(url)
@@ -66,25 +63,6 @@ class Root(Node):# Contient les méthodes de construction de l'arbre des organis
         else: # Sinon initialisation
             self.__createOverview(baseurl + path + filename)
             self.__parseOverview(bar=True)
-
-        # self.update_NC_records() # calculate the number of NC records for each folder
-
-    def getSubtreeFromPath(self, path):
-        print("Searching for subtree at path:", path)
-        return self._getSubtreeFromPathRecursive(self, path)
-
-    def _getSubtreeFromPathRecursive(self, node, path):
-        # print("Checking node:", node.data, "at path:", node.path)
-        if node.path == path:
-            print("Found subtree at path:", path)
-            return node
-        print("Checking children of node:", node.data, "at path:", node.path)
-        for child in node.children:
-            if path.startswith(child.path):
-                subtree = self._getSubtreeFromPathRecursive(child, path)
-                if subtree is not None:
-                    return subtree
-        return None # If the path is not found, return None
 
     def __updateOverview(self, url): #Met à jour l'aborescence locale à partir du fichier overview situé  à l'url en paramètre.
         r = requests.head(url)  # Obtention des dates de dernières modification 

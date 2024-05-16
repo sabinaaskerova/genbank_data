@@ -85,7 +85,6 @@ class MainWindow(QMainWindow):
         self.setStyleSheet("background-color: white;") 
 
         self.arbre = Root()
-        self.arbre.update_NC_records()
         self.fouille = Fouille([])
         self.percentage = 0
         self.processRecordsThread = None
