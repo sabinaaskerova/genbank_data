@@ -17,16 +17,7 @@ class Node():
     def addChild(self, obj):
         obj.parent = self 
         self.children.append(obj)
-        self.update_nc_records_count()
         return obj
-    
-    def update_parents_nc_records_count(self):
-        if self.parent is not None:
-            self.parent.update_nc_records_count()
-            self.parent.update_parents_nc_records_count()
-
-    def update_nc_records_count(self):
-        self.nc_records_count = sum(child.nc_records_count for child in self.children)
     
 class Root(Node):# Contient les méthodes de construction de l'arbre des organismes et des répertoire.
     # filename: le chemin relatif du fichier overview.txt  
@@ -119,7 +110,6 @@ class Root(Node):# Contient les méthodes de construction de l'arbre des organis
 
     def __createOverview(self, url): # Télécharge le fichier overview à partir de l'url.
         r = requests.get(url)
-        # print("Downloading overview file from Genbank")
         if (r.status_code == 200):
             if not os.path.isdir('Results'):
                 os.mkdir('Results')
@@ -161,7 +151,6 @@ class Root(Node):# Contient les méthodes de construction de l'arbre des organis
             name = row[i]
             path = path + '/' + format_filename(name)
             path = format_path(path)
-            # print(" branch: " + name + " at path: " + path)
             if not os.path.isdir(path):
                 os.mkdir(path)
             current_node = current_node.addChild(Node(name, path))

@@ -109,7 +109,6 @@ class TestSequence:
                     return False
 
             else: # syntax error or no bounds or not ingerers
-                # print("No bounds found or not separated by '..' or not integer or not a single pair")
                 return False
         except Exception as e:
             print(f"An error occurred in test_feature_bounds: {e}")
@@ -171,8 +170,7 @@ class FileHandler:
         filename = \
             "_".join([self.feature_type, self.organism_name, self.NC_number])
         path = path + "/" + filename + ".txt"
-        if not os.path.exists(path):
-            # Pas de fichier pour cette région, on fait le parsing
+        if not os.path.exists(path): # Pas de fichier pour cette région, on fait le parsing
             return True
 
         date = record.annotations["date"]
