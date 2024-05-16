@@ -5,6 +5,7 @@ Entrez.email = "thomas.fischer5@etu.unistra.fr"
 import http.client
 import datetime
 import os
+import threading
 
 class SequenceHandler:
     def __init__(self, record):
@@ -120,11 +121,12 @@ class FileHandler:
         self.feature_type = feature_type
         self.organism_name = organism_name
         self.NC_number = NC_number
+        self.index_lock = threading.Lock()  # Create a threading lock
     
+    # pour chaque join, il y a une suite d'introns/exons qui sont compte par index
     def write_introns_exons(self, feature_type, choice,record, feature, path):
         last_end = None
         index = 1
-        print("Writing to file.")
         print(f"{path}/{self.feature_type}_{self.organism_name}_{self.NC_number}.txt")
         try:
             for part in feature.location.parts:
@@ -133,24 +135,25 @@ class FileHandler:
                     if feature.location.operator == 'complement':
                         sequence = sequence.reverse_complement()
                     if TestSequence.check_codon(sequence):
-                        with open(f"{path}/{feature_type}_{self.organism_name}_{self.NC_number}.txt", "w") as out_file:
+                        with open(f"{path}/{feature_type}_{self.organism_name}_{self.NC_number}.txt", "a") as out_file:
                             location_str = ','.join([f"{p.start+1}..{p.end}" for p in feature.location.parts])
                             if isinstance(feature.location, CompoundLocation) and feature.location.strand == -1 and feature.location.operator == 'join':
                                 out_file.write(f"{feature_type} {self.organism_name} {self.NC_number}: complement(join({location_str})) {choice.capitalize()} {index}\n{sequence}\n")
                             else:
                                 out_file.write(f"{feature_type} {self.organism_name} {self.NC_number}: join({location_str}) {choice.capitalize()} {index}\n{sequence}\n")
                         
-                        index += 1
+                        # index += 1
+                        with self.index_lock:
+                            index += 1
                 last_end = part.end
         except Exception as e:
             print(f"An error occurred while writing introns/exons: {e}")
 
 
     def write_to_file(self, sequence, location, path):
-        print("Writing to file.")
         print(f"{path}/{self.feature_type}_{self.organism_name}_{self.NC_number}.txt")
         try:
-            with open(f"{path}/{self.feature_type}_{self.organism_name}_{self.NC_number}.txt", "w") as out_file:
+            with open(f"{path}/{self.feature_type}_{self.organism_name}_{self.NC_number}.txt", "a") as out_file:
                 if isinstance(location, CompoundLocation) and location.strand == -1:
                     location_str = f"{location.start+1}..{location.end}"
                     out_file.write(f"{self.feature_type} {self.organism_name} {self.NC_number}: complement({location_str})\n")
@@ -159,7 +162,6 @@ class FileHandler:
                     out_file.write(f"{self.feature_type} {self.organism_name} {self.NC_number}: {location_str}\n")
 
                 out_file.write(str(sequence))
-                print(f"{self.feature_type}_{self.organism_name}_{self.NC_number}.txt", "a")
                 out_file.write("\n")
         except Exception as e:
             print(f"An error occurred while writing to file: {e}")
@@ -181,14 +183,11 @@ class FileHandler:
             date_obj = datetime.datetime.strptime(date, "%d-%b-%Y")
             file_last_mod = \
                 datetime.datetime.fromtimestamp(os.path.getmtime(path))
-            if date_obj > file_last_mod:
-                # Notre séquence est plus récente que notre fichier => màj
+            if date_obj > file_last_mod: # Notre séquence est plus récente que notre fichier => màj
                 return True
-            else:
-                # Fichier local à jour
+            else: # Fichier local à jour
                 return False
-        except ValueError:
-            # Date de dernière mod inaccessible, màj dans le doute
+        except ValueError: # Date de dernière mod inaccessible, màj dans le doute
             return True
 
 
@@ -198,24 +197,21 @@ class RegionExtractor:
 
             
     def process_record(self, record, path):
-        print("Processing record.")
         sequence_handler = SequenceHandler(record)
         organism_name, NC_number = sequence_handler.get_organism_name_and_NC()
-        print(organism_name, NC_number)
         try:
             if sequence_handler.is_sequence_all_N(): # on rejette si la sequence est entierement composee de N
                 print("The entire sequence is 'N'")
             else:
                 for feature in record.features: # on parcourt tous les types de region (e.g. CDS et/ou intron)
                     if feature.type in self.regions: # tester si le type de region correspond
-                        print(feature.type)
+                        # print(feature.type)
                         file_handler = FileHandler(feature.type, organism_name,NC_number)
                         if not file_handler.needUpdate(record, path):
                             # Le fichier est déjà à jour, on passe à la suite
                             print("File doesn't need update")
                             continue
                         if feature is None or feature.location is None: # on rejette si les features sont invalides
-                            # print("Feature or location is None.")
                             continue 
                         if not TestSequence.test_feature_bounds(feature): # Test syntaxe des paires de bornes
                             continue

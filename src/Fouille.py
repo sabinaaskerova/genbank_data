@@ -107,7 +107,7 @@ class Fouille:
                 abort_log.add()
                 return
 
-            print("Fetching and processing records.")
+            # print("Fetching and processing records.")
             with ThreadPoolExecutor() as record_executor:
                 for record in SeqIO.parse(handle, "genbank"):
                     record_executor.submit(
