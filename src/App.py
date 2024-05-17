@@ -196,7 +196,6 @@ class MainWindow(QMainWindow):
         widget.setLayout(mainLayout)
         self.setCentralWidget(widget)
 
-        # Connect signals
         self.treeView.clicked.connect(self.displayFileContent)
         self.processButton.clicked.connect(self.processRecords)
 
@@ -204,7 +203,7 @@ class MainWindow(QMainWindow):
 
     def populateTreeView(self):
         model = CustomFileSystemModel()
-        root_path = os.path.join(QDir.currentPath(), "Results") # adapted for operating systems
+        root_path = os.path.join(QDir.currentPath(), "Results")
         model.setRootPath(root_path)
         self.treeView.setModel(model)
         self.treeView.setRootIndex(model.index(root_path))

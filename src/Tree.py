@@ -135,9 +135,7 @@ class Root(Node):# Contient les méthodes de construction de l'arbre des organis
                 for row in reader:
                     if row != [] and len(row) > 3:
                         i += 1
-                        # self.printProgressBar(i, size)
                         self.__addBranch(row)
-                # print()
             else:
                 for row in reader:
                     if row != [] and len(row) > 3:
