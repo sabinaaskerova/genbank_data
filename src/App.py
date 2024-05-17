@@ -219,8 +219,6 @@ class MainWindow(QMainWindow):
             print("Relative path:", relative_path)
             subtree = self.arbre.getSubtreeFromPath(relative_path) # Retrieve the subtree corresponding to the clicked item
             self.arbre.print_tree(subtree)
-            self.total_ncs = subtree.nc_records_count
-            print("Total NCs:", self.total_ncs)
             return subtree
         else:
             with open(filePath, 'r') as file:

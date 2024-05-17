@@ -21,12 +21,13 @@ class Node():
     
 class Root(Node):# Contient les méthodes de construction de l'arbre des organismes et des répertoire.
     # filename: le chemin relatif du fichier overview.txt  
-    def download_file(self, url, filename): # for downloadig NC ids files
+    def download_file(self, url, filename, path): # for downloadig NC ids files
         response = requests.get(url)
         if response.status_code == 200:
-            if not os.path.isdir('Results'):
-                os.mkdir('Results')
-            with open(os.path.join('Results', filename), 'wb') as f:
+            path = 'Results/'+path
+            if not os.path.isdir(path):
+                os.mkdir(path)
+            with open(os.path.join(path, filename), 'wb') as f:
                 f.write(response.content)
         else:
             print(f'Error: Unable to get {filename}')
@@ -35,13 +36,6 @@ class Root(Node):# Contient les méthodes de construction de l'arbre des organis
     def __init__(self) -> None: #Initialise le nœud racine et appelle toutes les méthodes de création/mise à jour de l'arbre.
         # super().__init__('.', '/Results')
         super().__init__('.', '.')
-        base_url = "https://ftp.ncbi.nlm.nih.gov/genomes/GENOME_REPORTS/IDS/"
-        files = ["Archaea.ids", "Bacteria.ids", "Eukaryota.ids", "Viruses.ids"]
-
-        for file in files:
-            url = base_url + file
-            self.download_file(url, file)
-
         baseurl = 'https://ftp.ncbi.nlm.nih.gov/' # Ouverture de l'overview
         path = 'genomes/GENOME_REPORTS/'
         filename = 'overview.txt'
@@ -54,6 +48,15 @@ class Root(Node):# Contient les méthodes de construction de l'arbre des organis
         else: # Sinon initialisation
             self.__createOverview(baseurl + path + filename)
             self.__parseOverview(bar=True)
+        
+        base_url = "https://ftp.ncbi.nlm.nih.gov/genomes/GENOME_REPORTS/IDS/"
+        files = ["Archaea.ids", "Bacteria.ids", "Eukaryota.ids", "Viruses.ids"]
+        pathes = ["Archaea/", "Bacteria/", "Eukaryota/", "Viruses/"]
+
+
+        for file, path in zip(files, pathes):
+            url = base_url + file
+            self.download_file(url, file, path)
 
     def __updateOverview(self, url): #Met à jour l'aborescence locale à partir du fichier overview situé  à l'url en paramètre.
         r = requests.head(url)  # Obtention des dates de dernières modification 
@@ -135,9 +138,7 @@ class Root(Node):# Contient les méthodes de construction de l'arbre des organis
                 for row in reader:
                     if row != [] and len(row) > 3:
                         i += 1
-                        # self.printProgressBar(i, size)
                         self.__addBranch(row)
-                # print()
             else:
                 for row in reader:
                     if row != [] and len(row) > 3:

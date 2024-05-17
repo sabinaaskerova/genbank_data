@@ -21,7 +21,7 @@ class Fouille:
             self.total_organisms = sum(1 for _ in file) - 1
 
         print("Calculating total number of NCS...")
-        files = ["Eukaryota.ids", "Bacteria.ids", "Archaea.ids", "Viruses.ids"]
+        files = ["Eukaryota/Eukaryota.ids", "Bacteria/Bacteria.ids", "Archaea/Archaea.ids", "Viruses/Viruses.ids"]
         for file in files:
             filename = format_path("Results/"+file)
             with open(filename, 'r') as file:
@@ -106,7 +106,6 @@ class Fouille:
                 abort_log.add()
                 return
 
-            # print("Fetching and processing records.")
             with ThreadPoolExecutor() as record_executor:
                 for record in SeqIO.parse(handle, "genbank"):
                     record_executor.submit(
