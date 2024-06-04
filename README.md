@@ -1,1 +1,1 @@
-Authors: Sabina Askerova, Alexandre Dubert, Fischer Thomas
+Authors: Sabina Askerova, Alexandre Dubert, Thomas Fischer
