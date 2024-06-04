@@ -89,7 +89,6 @@ class MainWindow(QMainWindow):
         self.percentage = 0
         self.processRecordsThread = None
         self.organismPercentage = 0
-        self.total_ncs = 0 # for current subtree
 
         self.setupUi()
 
@@ -116,11 +115,11 @@ class MainWindow(QMainWindow):
         self.processButton = QPushButton("Process Records")
         self.logsTextEdit = QPlainTextEdit()
         self.logsTextEdit.setReadOnly(True)
-        self.organismProgressLabel = QLabel(f"Ogranisms processed: {self.organismPercentage:.3f}%")
-        self.progressLabel = QLabel(f"NCs processed: {self.percentage:.3f}%")
+        self.organismProgressLabel = QLabel(f"Ogranisms processed: {self.organismPercentage:.8f}%")
+        self.progressLabel = QLabel(f"NCs processed: {self.percentage:.8f}%")
         self.progressBar = QProgressBar(self)
         self.progressBar.setMaximum(10000)
-        self.progressBar.setFormat("{:.3f}%".format(self.percentage))
+        self.progressBar.setFormat("{:.8f}%".format(self.percentage))
         self.regionInput = QLineEdit()
         groupBox = QGroupBox()
         self.setStyleSheet("QLabel { background-color: pink; border-radius: 5px; padding: 5px; }")
@@ -196,6 +195,7 @@ class MainWindow(QMainWindow):
         widget.setLayout(mainLayout)
         self.setCentralWidget(widget)
 
+        # Connect signals
         self.treeView.clicked.connect(self.displayFileContent)
         self.processButton.clicked.connect(self.processRecords)
 
@@ -203,7 +203,7 @@ class MainWindow(QMainWindow):
 
     def populateTreeView(self):
         model = CustomFileSystemModel()
-        root_path = os.path.join(QDir.currentPath(), "Results")
+        root_path = os.path.join(QDir.currentPath(), "Results") # adapted for operating systems
         model.setRootPath(root_path)
         self.treeView.setModel(model)
         self.treeView.setRootIndex(model.index(root_path))
@@ -211,21 +211,10 @@ class MainWindow(QMainWindow):
     def displayFileContent(self, index):
         model = self.treeView.model()
         filePath = model.filePath(index)
-        if model.isDir(index):
-            self.textEdit.clear()
-            relative_path = os.path.relpath(filePath, os.path.join(QDir.currentPath(), "Results"))
-            relative_path = "Results/"+relative_path
-            print("Relative path:", relative_path)
-            subtree = self.arbre.getSubtreeFromPath(relative_path) # Retrieve the subtree corresponding to the clicked item
-            self.arbre.print_tree(subtree)
-            self.total_ncs = subtree.nc_records_count
-            print("Total NCs:", self.total_ncs)
-            return subtree
-        else:
+        if not model.isDir(index):
             with open(filePath, 'r') as file:
                 content = file.read()
                 self.textEdit.setPlainText(content)
-            return None
 
     def processRecords(self):
         try:
@@ -253,10 +242,10 @@ class MainWindow(QMainWindow):
         
         self.organismPercentage = processed_organism/total_organism*100
         self.percentage = processed_ncs/nc_total*100
-        self.progressLabel.setText(f"NCs processed: {processed_ncs}/{nc_total} {self.percentage:.3f}%")
-        self.organismProgressLabel.setText(f"Organisms processed: {processed_organism}/{total_organism} {self.organismPercentage:.3f}%")
-        self.progressBar.setValue(int(self.percentage))
-        self.progressBar.setFormat(f"{self.percentage:.3f}%")
+        self.progressLabel.setText(f"NCs processed: {processed_ncs}/{nc_total} {self.percentage:.8f}%")
+        self.organismProgressLabel.setText(f"Organisms processed: {processed_organism}/{total_organism} {self.organismPercentage:.8f}%")
+        self.progressBar.setValue(int(self.percentage))  # Scale the percentage to the range of QProgressBar
+        self.progressBar.setFormat(f"{self.percentage:.8f}%")  # Display the percentage with decimal places
 
 
 if __name__ == "__main__":

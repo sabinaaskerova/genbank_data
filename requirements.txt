@@ -1,6 +1,10 @@
 biopython==1.78
-requests==2.31.0
+requests==2.32.0
 python-dateutil==2.8.2
 pytz==2023.3.post1
 PyQt5==5.14.0
 dateparser
+concurrent.futures
+threading
+http.client
+urrlib.error
