@@ -89,6 +89,7 @@ class MainWindow(QMainWindow):
         self.percentage = 0
         self.processRecordsThread = None
         self.organismPercentage = 0
+        self.total_ncs = 0 # for current subtree
 
         self.setupUi()
 
@@ -115,11 +116,11 @@ class MainWindow(QMainWindow):
         self.processButton = QPushButton("Process Records")
         self.logsTextEdit = QPlainTextEdit()
         self.logsTextEdit.setReadOnly(True)
-        self.organismProgressLabel = QLabel(f"Ogranisms processed: {self.organismPercentage:.8f}%")
-        self.progressLabel = QLabel(f"NCs processed: {self.percentage:.8f}%")
+        self.organismProgressLabel = QLabel(f"Ogranisms processed: {self.organismPercentage:.3f}%")
+        self.progressLabel = QLabel(f"NCs processed: {self.percentage:.3f}%")
         self.progressBar = QProgressBar(self)
         self.progressBar.setMaximum(10000)
-        self.progressBar.setFormat("{:.8f}%".format(self.percentage))
+        self.progressBar.setFormat("{:.3f}%".format(self.percentage))
         self.regionInput = QLineEdit()
         groupBox = QGroupBox()
         self.setStyleSheet("QLabel { background-color: pink; border-radius: 5px; padding: 5px; }")
@@ -242,10 +243,10 @@ class MainWindow(QMainWindow):
         
         self.organismPercentage = processed_organism/total_organism*100
         self.percentage = processed_ncs/nc_total*100
-        self.progressLabel.setText(f"NCs processed: {processed_ncs}/{nc_total} {self.percentage:.8f}%")
-        self.organismProgressLabel.setText(f"Organisms processed: {processed_organism}/{total_organism} {self.organismPercentage:.8f}%")
-        self.progressBar.setValue(int(self.percentage))  # Scale the percentage to the range of QProgressBar
-        self.progressBar.setFormat(f"{self.percentage:.8f}%")  # Display the percentage with decimal places
+        self.progressLabel.setText(f"NCs processed: {processed_ncs}/{nc_total} {self.percentage:.3f}%")
+        self.organismProgressLabel.setText(f"Organisms processed: {processed_organism}/{total_organism} {self.organismPercentage:.3f}%")
+        self.progressBar.setValue(int(self.percentage))
+        self.progressBar.setFormat(f"{self.percentage:.3f}%")
 
 
 if __name__ == "__main__":
